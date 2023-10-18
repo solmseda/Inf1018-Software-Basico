@@ -81,20 +81,30 @@ void constroiUtf8(int varint, int *caractere) {
     }
 }
 
-int varint2utf(FILE *arq_entrada, FILE *arq_saida) {
-    int varint = 0;
-    int caractere;
-
-    while (fread(&varint, sizeof(int), 1, arq_entrada) == 1) {
-      constroiUtf8(varint, &caractere);
-
-      fwrite(&caractere, sizeof(int), 1, arq_saida);
+void escreveUtf8(int value, FILE *arq_saida) {
+    unsigned char caractere[5] = {0};
+    int i;
+    for (i = 0; value > 0x7F; i++) {
+        caractere[i] = (value & 0x7F) | 0x80;
+        value >>= 7;
     }
+    caractere[i] = value;
+    fwrite(caractere, sizeof(unsigned char), i + 1, arq_saida);
+}
 
-    if (ferror(arq_entrada)) {
-        fprintf(stderr, "Erro de leitura no arquivo de entrada.\n");
-        return -1;
+void varint2utf(FILE *arq_entrada, FILE *arq_saida) {
+    int c;
+    int value = 0;
+    int shift = 0;
+
+    while ((c = fgetc(arq_entrada)) != EOF) {
+        value |= (c & 0x7F) << shift;
+        shift += 7;
+        if ((c & 0x80) == 0) {
+            escreveUtf8
+          (value, arq_saida);
+            value = 0;
+            shift = 0;
+        }
     }
-
-    return 0;
 }
