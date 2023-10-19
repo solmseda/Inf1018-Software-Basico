@@ -10,13 +10,12 @@ int main() {
     if (input_file == NULL) {
             printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
             return 1;
-        }
+    }
 
     if (output_file == NULL) {
         printf("Erro ao abrir o arquivo utf2varint_entrada\n");
         return 1;
     }
-
     fputc(0x00A9, input_file);
 
     fclose(input_file);
@@ -29,7 +28,7 @@ int main() {
     fclose(input_file);
     fclose(output_file);
 
-    input_file = fopen("varint2utf_entrada", "rb");
+    input_file = fopen("varint2utf_entrada", "wb");
     output_file = fopen("varint2utf_saida.txt", "wb");
 
 
