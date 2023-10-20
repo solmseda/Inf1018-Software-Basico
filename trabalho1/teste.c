@@ -1,38 +1,41 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include "converte.h"
 
-void comparaArquivos(FILE *arquivo1, FILE *arquivo2){
+void comparaArquivos(FILE *arquivo1, FILE *arquivo2) {
     int ch1, ch2;
+    int diferenca = 0;
+
     while ((ch1 = fgetc(arquivo1)) != EOF && (ch2 = fgetc(arquivo2)) != EOF) {
-        assert(ch1 == ch2);
+        if (ch1 != ch2) {
+            diferenca = 1;
+            break;
+        }
+    }
+
+    if (diferenca) {
+        printf("Os arquivos são diferentes.\n");
+    } else {
+        printf("Os arquivos são iguais.\n");
     }
 }
 
-/*
-Teste para verificar se a conversão de UTF-8 para varint está funcionando
-Um caracterer codificado em UTF-8 é escrito em um arquivo, o mesmo caractere
-é escrito em outro arquivo em varint, e então os dois arquivos são comparados
-*/
-void utf8VarintOneByte() {
+void utf8VarintOneByte(const char *utf8_bytes, const char *varint_bytes) {
     FILE *arquivoEntrada = fopen("utf2varint_entrada.txt", "wb");
     FILE *arquivoSaida = fopen("utf2varint_saida", "wb");
 
-    if (arquivoEntrada == NULL) {
-            printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
-            return;
-    }
-
-    if (arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo utf2varint_saida\n");
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
         return;
     }
-    // Criando a sequência de bytes correspondente ao caractere © em UTF-8
-    fputc(0x00A9, arquivoEntrada);
 
+    size_t entradaLength = strlen(utf8_bytes);
+    fwrite(utf8_bytes, 1, entradaLength, arquivoEntrada);
     fclose(arquivoEntrada);
+
     arquivoEntrada = fopen("utf2varint_entrada.txt", "rb");
-    if(arquivoEntrada == NULL) {
+    if (arquivoEntrada == NULL) {
         printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
         return;
     }
@@ -42,27 +45,23 @@ void utf8VarintOneByte() {
     fclose(arquivoEntrada);
     fclose(arquivoSaida);
 
-    arquivoEntrada = fopen("varint2utf_entrada", "wb");
-    arquivoSaida = fopen("varint2utf_saida.txt", "wb");
-    if(arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo varint2utf_entrada\n");
-        return;
-    }
-    if(arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo varint2utf_saida.txt\n");
+    arquivoEntrada = fopen("varintUtf8_entrada", "wb");
+    arquivoSaida = fopen("varintUtf8_saida.txt", "wb");
+
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
         return;
     }
 
-
-    // Criando a sequência de bytes correspondente ao caractere © em varint
-    unsigned char utf8_bytes[] = {0xC2, 0xA9};
-
-    fwrite(utf8_bytes, sizeof(unsigned char), sizeof(utf8_bytes), arquivoEntrada);
-
+    size_t saidaEsperadaLength = strlen(varint_bytes);
+    fwrite(varint_bytes, 1, saidaEsperadaLength, arquivoEntrada);
     fclose(arquivoEntrada);
-    arquivoEntrada = fopen("varint2utf_entrada", "rb");
-    if(arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo varint2utf_entrada\n");
+
+    arquivoEntrada = fopen("varintUtf8_entrada", "rb");
+    arquivoSaida = fopen("varintUtf8_saida.txt", "rb");
+
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
         return;
     }
 
@@ -72,17 +71,13 @@ void utf8VarintOneByte() {
     fclose(arquivoSaida);
 
     arquivoEntrada = fopen("utf2varint_entrada.txt", "rb");
-    arquivoSaida = fopen("varint2utf_saida.txt", "rb");
-    if(arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
-        return;
-    }
-    if(arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo varint2utf_saida.txt\n");
+    arquivoSaida = fopen("varintUtf8_saida.txt", "rb");
+
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
         return;
     }
 
-    // Comparando o conteúdo dos arquivos de entrada e resultado
     comparaArquivos(arquivoEntrada, arquivoSaida);
 
     fclose(arquivoEntrada);
@@ -91,29 +86,25 @@ void utf8VarintOneByte() {
     printf("Conversão de UTF-8 para varint: sucesso.\n");
 }
 
-int varintUtf8OneByte(){
-    FILE *arquivoEntrada = fopen("varintUtf8_entrada.txt", "wb");
-    FILE *arquivoSaida = fopen("varintUtf8_saida", "wb");
-    if (arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo varintUtf8_entrada.txt\n");
-        return 1;
-    }
-    if (arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo varintUtf8_saida\n");
-        return 1;
-    }
-    
-    // Criando a sequência de bytes correspondente ao caractere © em varint
-    unsigned char utf8_bytes[] = {0xC2, 0xA9};
+void varintUtf8OneByte(const char *varint_bytes, const char *utf8_bytes) {
+    FILE *arquivoEntrada = fopen("varintUtf8_entrada", "wb");
+    FILE *arquivoSaida = fopen("varintUtf8_saida.txt", "wb");
 
-    fwrite(utf8_bytes, sizeof(unsigned char), sizeof(utf8_bytes), arquivoEntrada);
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
+        return;
+    }
+
+    size_t entradaLength = strlen(varint_bytes);
+    fwrite(varint_bytes, 1, entradaLength, arquivoEntrada);
     fclose(arquivoEntrada);
 
-    fopen("varintUtf8_entrada.txt", "rb");
+    arquivoEntrada = fopen("varintUtf8_entrada", "rb");
     if (arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo varintUtf8_entrada.txt\n");
-        return 1;
+        printf("Erro ao abrir o arquivo varintUtf8_entrada\n");
+        return;
     }
+
     utf2varint(arquivoEntrada, arquivoSaida);
 
     fclose(arquivoEntrada);
@@ -121,53 +112,70 @@ int varintUtf8OneByte(){
 
     arquivoEntrada = fopen("utf2varint_entrada.txt", "wb");
     arquivoSaida = fopen("utf2varint_saida", "wb");
-    if (arquivoEntrada == NULL) {
-            printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
-            return 1;
+
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
+        return;
     }
 
-    if (arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo utf2varint_saida\n");
-        return 1;
-    }
-    // Criando a sequência de bytes correspondente ao caractere © em UTF-8
-    fputc(0x00A9, arquivoEntrada);
-
+    size_t saidaEsperadaLength = strlen(utf8_bytes);
+    fwrite(utf8_bytes, 1, saidaEsperadaLength, arquivoEntrada);
     fclose(arquivoEntrada);
-    fopen("utf2varint_entrada.txt", "rb");
-    if(arquivoEntrada == NULL) {
+
+    arquivoEntrada = fopen("utf2varint_entrada.txt", "rb");
+    if (arquivoEntrada == NULL) {
         printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
-        return 1;
+        return;
     }
 
     utf2varint(arquivoEntrada, arquivoSaida);
     fclose(arquivoEntrada);
 
-    arquivoEntrada = fopen("varintUtf8_entrada.txt", "rb");
+    arquivoEntrada = fopen("varintUtf8_entrada", "rb");
     arquivoSaida = fopen("utf2varint_saida", "rb");
-    if(arquivoEntrada == NULL) {
-        printf("Erro ao abrir o arquivo utf2varint_entrada.txt\n");
-        return 1;
-    }
-    if(arquivoSaida == NULL) {
-        printf("Erro ao abrir o arquivo varint2utf_saida.txt\n");
-        return 1;
+
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
+        printf("Erro ao abrir os arquivos de entrada/saída\n");
+        return;
     }
 
-    // Comparando o conteúdo dos arquivos de entrada e resultado
     comparaArquivos(arquivoEntrada, arquivoSaida);
 
     fclose(arquivoEntrada);
     fclose(arquivoSaida);
 
     printf("Conversão de varint para UTF-8: sucesso.\n");
-
-    return 0;
 }
 
+
 int main() {
-    utf8VarintOneByte();
-    varintUtf8OneByte();
+    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando um byte
+    char utf8_bytes1[] = {'\0'};
+    char varint_bytes1[] = {0x00};
+
+    utf8VarintOneByte(utf8_bytes1, varint_bytes1);
+    varintUtf8OneByte(varint_bytes1, utf8_bytes1);
+
+    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando dois bytes
+    char utf8_bytes2[] = {0xC2, 0x2F};
+    char varint_bytes2[] = {0x2F};
+
+    utf8VarintOneByte(utf8_bytes2, varint_bytes2);
+    varintUtf8OneByte(varint_bytes2, utf8_bytes2);
+
+    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando quatro bytes
+    char utf8_bytes3[] = {0xE2, 0x82, 0xAC};
+    char varint_bytes3[] = {0xAC};
+
+    utf8VarintOneByte(utf8_bytes3, varint_bytes3);
+    varintUtf8OneByte(varint_bytes3, utf8_bytes3);
+
+    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando quatro bytes
+    char utf8_bytes4[] = {0xF0, 0x9F, 0x92, 0xA9};
+    char varint_bytes4[] = {0x92, 0x4A, 0x8F};
+    
+    utf8VarintOneByte(utf8_bytes4, varint_bytes4);
+    varintUtf8OneByte(varint_bytes4, utf8_bytes4); 
 
     return 0;
 }
