@@ -149,31 +149,31 @@ void varintUtf8OneByte(const char *varint_bytes, const char *utf8_bytes) {
 
 
 int main() {
-    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando um byte
+    printf("Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando um byte\n");
     char utf8_bytes1[] = {'\0'};
     char varint_bytes1[] = {0x00};
 
     utf8VarintOneByte(utf8_bytes1, varint_bytes1);
     varintUtf8OneByte(varint_bytes1, utf8_bytes1);
 
-    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando dois bytes
+    printf("Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando dois bytes\n");
     char utf8_bytes2[] = {0xC2, 0x2F};
     char varint_bytes2[] = {0x2F};
 
     utf8VarintOneByte(utf8_bytes2, varint_bytes2);
     varintUtf8OneByte(varint_bytes2, utf8_bytes2);
 
-    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando quatro bytes
+    printf("Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando três bytes\n");
     char utf8_bytes3[] = {0xE2, 0x82, 0xAC};
     char varint_bytes3[] = {0xAC};
 
     utf8VarintOneByte(utf8_bytes3, varint_bytes3);
     varintUtf8OneByte(varint_bytes3, utf8_bytes3);
 
-    // Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando quatro bytes
+    printf("Para testar a conversão de UTF-8 para varint e de varint para UTF-8 utilizando quatro bytes\n");
     char utf8_bytes4[] = {0xF0, 0x9F, 0x92, 0xA9};
     char varint_bytes4[] = {0x92, 0x4A, 0x8F};
-    
+
     utf8VarintOneByte(utf8_bytes4, varint_bytes4);
     varintUtf8OneByte(varint_bytes4, utf8_bytes4); 
 

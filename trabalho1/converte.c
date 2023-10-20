@@ -1,3 +1,8 @@
+/*
+Gabrielle Trajano Mulinari – 1811897 – 3WA
+Sol Castilho Araújo de Moraes Sêda – 1711600 – 3WA
+*/
+
 #include <stdio.h>
 
 /*
