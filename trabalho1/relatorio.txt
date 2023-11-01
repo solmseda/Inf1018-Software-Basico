@@ -1,0 +1,11 @@
+INF1018 – Software Básico – Trabalho 1
+
+Gabrielle Trajano Mulinari – 1811897 – 3WA
+Sol Castilho Araújo de Moraes Sêda – 1711600 – 3WA
+
+Relatório 
+
+De acordo com nossos testes, todas as nossas funções estão realizando corretamente a conversão de UTF-8 para varint e vice-versa.
+Testamos todas as quatro funcionalidades de representação de UTF-8 na faixa de valores. Fizemos a mesma conversão de caracteres de UTF-8 para varint e vice-versa e comparamos os arquivos resultantes com seus respectivos arquivos de entrada, e nos mostrou que eles são de fato o mesmo arquivo através de sua comparação de seus conteúdos em binário.
+
+
