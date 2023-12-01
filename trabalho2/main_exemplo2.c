@@ -21,8 +21,18 @@ int main (void) {
   params[1].orig_val = FIX;
   params[1].valor.v_int = 10;
 
+  for (int j = 0; j < 500; j++)
+  {
+    codigo[j] = 0x00;
+  }
+  printf("\n");
+
   cria_func (mult, params, 2, codigo);
   f_mult = (func_ptr) codigo;
+  for (int j = 0; j < 500; j++)
+  {
+    printf("%02X ", codigo[j]);
+  }
   
   for (i = 1; i <=10; i++) {
     printf("%d\n", f_mult()); /* a nova função não recebe argumentos */
