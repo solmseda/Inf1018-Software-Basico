@@ -42,9 +42,25 @@ void move_int_to_register(int valor, int i, unsigned char codigo[], int *index, 
 }
 
 
-void move_ptr_to_register(void *valor, int i, unsigned char codigo[], int *index, int *tamanho_do_movimento_ponteiro) {
-    // O valor amarrado é um ponteiro
+// Function to move a pointer value to the appropriate register
+void move_ptr_to_register(void* ptr, int register_number, unsigned char* codigo, int* index) {
+    // Check if the register number is valid
+    if (register_number < 0 || register_number > 2) {
+        fprintf(stderr, "Invalid register number: %d\n", register_number);
+        exit(1);
+    }
+
+    // The opcodes for moving a value to rdi, rsi, and rdx respectively
+    const unsigned char opcodes[] = {0xbf, 0xbe, 0xba};
+
+    // Write the opcode to the code array
+    codigo[*index] = 0x48; // REX prefix for 64-bit
+    codigo[*index + 1] = opcodes[register_number]; // Opcode for mov to the register
+    memcpy(&codigo[*index + 2], &ptr, sizeof(ptr)); // Copy the pointer
+    *index += 2 + sizeof(ptr);
 }
+
+
 
 void chama_func_original(void *f, unsigned char codigo[], int *index) {
     // Instrução movq para mover o endereço da função para %rax
@@ -77,6 +93,7 @@ void finaliza_epilogo(unsigned char codigo[]) {
 void cria_func(void *f, DescParam params[], int n, unsigned char codigo[]) {
     int index = 0;
     int tamanho_do_movimento_inteiro;
+    int tamanho_do_movimento_ponteiro;
     int size;
 
     inicializar_prologo(codigo, &size);
@@ -87,7 +104,24 @@ void cria_func(void *f, DescParam params[], int n, unsigned char codigo[]) {
             if (params[i].orig_val == FIX) {
                 // Valor fixo - move diretamente para o registrador
                 move_int_to_register(params[i].valor.v_int, i, codigo, &index, &tamanho_do_movimento_inteiro);
-            }            
+            }else if (params[i].orig_val == IND) {
+                // Endereço de uma variável - move o endereço da variável para o registrador
+                int *valor = params[i].valor.v_ptr;
+                move_int_to_register(*valor, i, codigo, &index, &tamanho_do_movimento_inteiro);
+            }
+        }
+        if (params[i].tipo_val == PTR_PAR) {
+            if (params[i].orig_val == FIX) {
+                // Fixed pointer value - move directly to the register
+                move_ptr_to_register(params[i].valor.v_ptr, i % 3, codigo, &index);
+            } else if (params[i].orig_val == IND) {
+                // Address of a variable - move the address to the register
+                void *valor = params[i].valor.v_ptr;
+                move_ptr_to_register(valor, i % 3, codigo, &index);
+            } else if (params[i].orig_val == PARAM) {
+                // PARAM case for PTR_PAR - move the pointer value to the register
+                move_ptr_to_register(params[i].valor.v_ptr, i % 3, codigo, &index);
+            }
         }
     }
 
