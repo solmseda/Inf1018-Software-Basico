@@ -13,12 +13,13 @@ int main (void) {
   int tam;
   unsigned char codigo[500];
 
-  params[0].tipo_val = PTR_PAR; /* o primeiro parâmetro de memcmp é um ponteiro para char */
-  params[0].orig_val = FIX;     /* a nova função passa para memcmp o endereço da string "fixa" */
-  params[0].valor.v_ptr = fixa;
 
-  params[1].tipo_val = PTR_PAR; /* o segundo parâmetro de memcmp é também um ponteiro para char */
-  params[1].orig_val = PARAM;   /* a nova função recebe esse ponteiro e repassa para memcmp */
+  params[0].tipo_val = PTR_PAR; /* o segundo parâmetro de memcmp é também um ponteiro para char */
+  params[0].orig_val = PARAM;   /* a nova função recebe esse ponteiro e repassa para memcmp */
+
+  params[1].tipo_val = PTR_PAR; /* o primeiro parâmetro de memcmp é um ponteiro para char */
+  params[1].orig_val = FIX;     /* a nova função passa para memcmp o endereço da string "fixa" */
+  params[1].valor.v_ptr = fixa;
 
   params[2].tipo_val = INT_PAR; /* o terceiro parâmetro de memcmp é um inteiro */
   params[2].orig_val = PARAM;   /* a nova função recebe esse inteiro e repassa para memcmp */

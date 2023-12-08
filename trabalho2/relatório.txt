@@ -1,4 +1,7 @@
-começamos implementando a função que recebe e amarra argumentos do tipo inteiro.
+Gabrielle Trajano Mulinari - 1811897 - 3WA
+Sol Castilho Araújo de Moraes Sêda - 1711600 - 3WA
+
+Começamos implementando a função que recebe e amarra argumentos do tipo inteiro.
 Utiliazando como base o primeiro exemplo do enunciado em que a multiplicação é feita
 com 10 amarrado no segundo parametro conseguimos fazer funcionar com ela rodando e tendo como resultado:
 sol@pop-os:~/Faculdade/inf1018 - Software Basico/Inf1018-Software-Basico/trabalho2$ ./soma
@@ -14,4 +17,6 @@ Movendo valor 10 para registrador 1
 19
 20
 
-Após isso testamos acresentando mais um parametro amarrado, sempre ascresentando + 1 no resultado
+Após isso testamos acresentando mais um parametro amarrado, sempre ascresentando + 1 no resultado.
+Tivemos dificuldade na implementação dos casos envolvendo ponteiros, mas conseguimos fazer funcionar.
+Para testar o programa completo utilizamos como base os exemplos de uso e alterando eles para testar os casos diferentes como PARAM, FIX e IND passados em posições diferentes.

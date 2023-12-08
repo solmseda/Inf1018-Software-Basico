@@ -1,183 +1,140 @@
+/* Gabrielle Trajano Mulinari 1811897 3WA */
+/* Sol Castilho Araújo de Moraes Sêda 1711600 3WA*/
+
+
 #include "cria_func.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+void cria_func(void* f, DescParam params[], int n, unsigned char code[]) {
+    int i = 0;
+    int j;
+    int cont = 0; // count the number of parameters
+    int aux;
+    int fixParams = 0; // count the number of fixed parameters
 
+    // move instruction for the temporary register
+    unsigned char reg[][3] = {{0xfa, 0xf8, 0xf9}, {0xf2, 0xf0, 0xf1}, {0xd2, 0xd0, 0xd1}};
 
-void cria_func (void* f, DescParam params[], int n, unsigned char codigo[])
-{
-    //auxiliar usado para pegar o valor do int e da chamada do call 
+    // registers for mov operations %r10d  %r8d  %r9d
+    unsigned char regSave[] = {0xba, 0xb8, 0xb9};
+
+    //                          %edi  %esi  %edx
+    unsigned char regCall[] = {0xd7, 0xc6, 0xca};
+
+    // array with instructions to save pointers
+    unsigned char saveD[] = {0x12, 0x00, 0x09};
+
+    // auxiliary variable used to get the value of int and the call
     union {
         int i;
         char c[4];
-    }u;
+    } u;
 
-    //auxiliar usado para pegar o valor dos ponteiros
+    // auxiliary variable used to get the value of pointers
     union {
         unsigned long l;
         char c[8];
-    }y;
-    
-    //pushq %rbp //movq  %rsp, %rbp 
-    unsigned char start[]={0x55, 0x48, 0x89, 0xe5};
-    
-    //leave //ret
-    unsigned char end[]={0xc9, 0xc3};
+    } y;
 
-    //função movl do para o registrador temporario                          
-    unsigned char reg[][3] = {{0xfa, 0xf8, 0xf9}, {0xf2, 0xf0, 0xf1}, {0xd2, 0xd0, 0xd1}} ; 
-    
-    //registradores para fazer mov
-    //                        %r10d  %r8d  %r9d
-    unsigned char regSave[] = {0xba, 0xb8, 0xb9 }; 
+    // pushq %rbp // movq  %rsp, %rbp
+    code[i++] = 0x55;
+    code[i++] = 0x48;
+    code[i++] = 0x89;
+    code[i++] = 0xe5;
 
-    //                          %edi  %esi  %edx
-    unsigned char regCall[] = {0xd7, 0xc6, 0xca}; 
-
-    //vetor com instruções para salvar os ponteiros
-    unsigned char saveD[] = {0x12, 0x00, 0x09}; 
-
-    int i = 0;
-    int j;
-    int cont =0;
-    int aux;
-    //START
-    for(j=0; j<4; j++)
-    {
-        codigo[i] = start[j];
-        i++;
-    }
-
-    //move os registradores dos paramentros para salva-los 
-    //edi ->  r10d
-    //esi ->  r8d
-    //edx ->  r9d
-    for( j = 0 ; j < n ; j++, cont++){
-        if(params[j].tipo_val == INT_PAR){
-
-            if(params[j].orig_val == PARAM){
-                //coloca o parametro no registrador certo para chamar a funcao
-                codigo[i] = 0x41;
-                codigo[i+1] = 0x89;
-                codigo[i+2] = reg[cont][j];
-                i+=3;
-                
-            }
-            else if (params[j].orig_val == FIX){
-                codigo[i] = 0x41;
-                codigo[i+1] = regSave[j];
-                i+=2;
+    // move the parameter registers to save them
+    // edi -> r10d
+    // esi -> r8d
+    // edx -> r9d
+    for (j = 0; j < n; j++, cont++) {
+        if (params[j].tipo_val == INT_PAR) {
+            if (params[j].orig_val == PARAM) {
+                // place the parameter in the correct register to call the function
+                code[i++] = 0x41;
+                code[i++] = 0x89;
+                code[i++] = reg[cont][j];
+            } else if (params[j].orig_val == FIX) {
+                fixParams++;
+                code[i] = 0x41;
+                code[i + 1] = regSave[j];
+                i += 2;
                 u.i = params[j].valor.v_int;
-                for(aux =0; aux < 4 ; aux++){
-                    codigo[i] = u.c[aux];
-                    i++; 
-                }
-                
-            } 
-            else if(params[j].orig_val == IND){
-
-                codigo[i] = 0x49;
-                codigo[i+1] = regSave[j];
-                i+=2;
-
-                y.l = (unsigned long) params[j].valor.v_ptr;
-                for (aux = 0; aux<8; aux++){
-                    codigo[i] = y.c[aux];
+                for (aux = 0; aux < 4; aux++) {
+                    code[i] = u.c[aux];
                     i++;
                 }
-                
-                //mov (%r10), %r10d ou os outros registradores dependendo do num de parametro
-                codigo[i] = 0x45; 
-                codigo[i+1] = 0x8b;
-                codigo[i+2] = saveD[j];
-                i+=3;
-                    
+            } else if (params[j].orig_val == IND) {
+                code[i] = 0x49;
+                code[i + 1] = regSave[j];
+                i += 2;
+
+                y.l = (unsigned long) params[j].valor.v_ptr;
+                for (aux = 0; aux < 8; aux++) {
+                    code[i] = y.c[aux];
+                    i++;
+                }
+
+                // mov (%r10), %r10d or other registers depending on the number of parameters
+                code[i] = 0x45;
+                code[i + 1] = 0x8b;
+                code[i + 2] = saveD[j];
+                i += 3;
             }
-        
-        }
-        else if(params[j].tipo_val == PTR_PAR){
-            
-            if(params[j].orig_val == PARAM){
-                //coloca o parametro no registrador certo para chamar a funcao
-                codigo[i] = 0x49;
-                codigo[i+1] = 0x89;
-                codigo[i+2] = reg[cont][j];
-                i+=3;
-                
+        } else if (params[j].tipo_val == PTR_PAR) {
+            if (params[j].orig_val == PARAM) {
+                code[i++] = 0x49;
+                code[i++] = 0x89;
+                code[i++] = reg[cont - fixParams][j];
             }
-            else if(params[j].orig_val == FIX)
-			{
-				
-                codigo[i] = 0x49;
-                codigo[i+1] = regSave[j];
-                i+=2;
+            if (params[j].orig_val == FIX || params[j].orig_val == IND) {
+                if (params[j].orig_val == FIX) {
+                    fixParams++;
+                }
+                code[i++] = 0x49;
+                code[i++] = regSave[j];
 
                 y.l = (unsigned long) params[j].valor.v_ptr;
-                for (aux = 0; aux<8; aux++){
-                    codigo[i] = y.c[aux];
-                    i++;
+                for (aux = 0; aux < 8; aux++) {
+                    code[i++] = y.c[aux];
                 }
-			}
-			else
-			{
-				codigo[i] = 0x49;
-                codigo[i+1] = regSave[j];
-                i+=2;
 
-                y.l = (unsigned long) params[j].valor.v_ptr;
-                for (aux = 0; aux<8; aux++){
-                    codigo[i] = y.c[aux];
-                    i++;
+                if (params[j].orig_val == IND) {
+                    code[i++] = 0x49;
+                    code[i++] = 0x8b;
+                    code[i++] = saveD[j];
                 }
-                
-                //mov (%r10), %r10 ou os outros registradores dependendo do n de parametro
-                codigo[i] = 0x49; 
-                codigo[i+1] = 0x8b;
-                codigo[i+2] = saveD[j];
-                i+=3;
-
-			}
+            }
         }
     }
 
-    //move para os registradores de parametros para chamar a funcao;
-    //r12-> rdi
-    //r8 -> rsi  
-    //r9 -> rdx 
-    for( j = 0 ; j < n ; j++){
-        if(params[j].tipo_val == INT_PAR)
-            codigo[i] = 0x44 ;
-        else 
-            codigo[i] = 0x4c ;
+    // move to the parameter registers to call the function
+    // r12-> rdi
+    // r8 -> rsi
+    // r9 -> rdx
+    for (j = 0; j < n; j++) {
+        if (params[j].tipo_val == INT_PAR)
+            code[i] = 0x44;
+        else
+            code[i] = 0x4c;
 
-        codigo[i+1] = 0x89 ;
-        i+=2;
-        codigo[i] = regCall[j];
-        i++;
-    }    
-
-    // Move o endereço da função f para o registrador rax
-    codigo[i++] = 0x48; // REX prefixo para indicar uso de registrador estendido
-    codigo[i++] = 0xb8; // Opcode para mov rax, imm64
-    *((void**)(&codigo[i])) = f; // Endereço da função f
-    i += 8; // Avança 8 bytes
-
-    // Faz call rax
-    codigo[i++] = 0xFF; // Opcode para call r/m64
-    codigo[i++] = 0xD0; // ModR/M byte para call rax
-
-    //END
-    for(j=0; j<2; j++)
-    {
-        codigo[i] = end[j];
+        code[i + 1] = 0x89;
+        i += 2;
+        code[i] = regCall[j];
         i++;
     }
 
+    // Move the address of the function f to the rax register
+    code[i++] = 0x48; // REX prefix to indicate the use of extended register
+    code[i++] = 0xb8; // Opcode for mov rax
+    *((void**)(&code[i])) = f; // Address of the function f
+    i += 8; // Move 8 bytes forward
 
-    printf("código de maquina gerado:\n");
-    for (int idx = 0; idx < i; ++idx) {
-        printf("%02X ", codigo[idx]);
-    }
-    printf("\n");
+    // Call rax
+    code[i++] = 0xFF; 
+    code[i++] = 0xD0; 
 
+    // leave // ret
+    code[i++] = 0xc9;
+    code[i++] = 0xc3;
 }

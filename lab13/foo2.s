@@ -11,7 +11,7 @@ foo:
     pushq   %rbp
     movq    %rsp, %rbp
 
-    call   add
+    mov    %rdi, %r8
 
     leave 
     ret
